@@ -1,0 +1,17 @@
+{
+  "name": "picture-frame",
+  "module": "backend/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch backend/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "hono": "^3.12.6"
+  }
+}
