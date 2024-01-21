@@ -9,7 +9,7 @@ export class Environment {
 
   static get storagePath(): string {
     if (Bun.env.NODE_ENV === 'development') {
-      return 'temp/storage';
+      return './temp/storage';
     }
 
     return Bun.env.STORAGE_PATH || '/storage';
