@@ -6,8 +6,7 @@
     "dev": "bun run --watch backend/index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "svelte": "^4.2.9"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

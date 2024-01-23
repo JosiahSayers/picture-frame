@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import imageController from './controllers/image.controller';
 import { logger } from 'hono/logger';
 
-const app = new Hono();
+const app = new Hono().basePath('/api');
 
 app.use('*', logger());
 
@@ -11,11 +11,5 @@ app.get('health', (c) => {
 });
 
 app.route('/images', imageController);
-
-if (Bun.env.NODE_ENV === 'development') {
-  app.use('*', (c) => {
-    return fetch(`http://localhost:5173/${c.req.path}`);
-  });
-}
 
 export default app;
