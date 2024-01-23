@@ -1,4 +1,4 @@
-import { allowPageClose, confirmPageClose } from '$lib/confirm-page-clost';
+import { allowPageClose, confirmPageClose } from '$lib/confirm-page-close';
 import { writable, derived } from 'svelte/store';
 
 let currentlyProcessingPromise = false;

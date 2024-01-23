@@ -3,7 +3,9 @@
   import 'tailwindcss/tailwind.css';
 </script>
 
-<Navbar />
-<main class="p-6">
-  <slot />
-</main>
+<div id="app">
+  <Navbar />
+  <main class="p-6">
+    <slot />
+  </main>
+</div>

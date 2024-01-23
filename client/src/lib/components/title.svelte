@@ -1,3 +1,1 @@
-<div class="prose mb-10">
-  <h1><slot /></h1>
-</div>
+<h1 class="text-4xl font-bold"><slot /></h1>
