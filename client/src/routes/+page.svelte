@@ -1,7 +1,10 @@
 <script lang="ts">
   import SlideShowContainer from '$lib/components/slideshow/SlideShowContainer.svelte';
   import Title from '$lib/components/title.svelte';
+  import { slideshowStore } from '$lib/stores/slideshow.store.js';
   export let data;
+
+  $: slideshowStore.set(data.files);
   let showSlideshow = false;
 
   async function requestFullscreen() {
@@ -38,7 +41,6 @@
 </div>
 
 <SlideShowContainer
-  images={data.files}
   show={showSlideshow}
   on:close={() => (showSlideshow = false)}
 />
