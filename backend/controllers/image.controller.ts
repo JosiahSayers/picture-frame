@@ -6,7 +6,12 @@ const controller = new Hono();
 
 controller.get('/', async (c) => {
   const files = await Image.list();
-  return c.json({ files });
+  const lastUpdated = await Image.lastUploadTime();
+  return c.json({ files, lastUpdated });
+});
+
+controller.get('/last-upload', async (c) => {
+  return c.json({ date: await Image.lastUploadTime() }, 200);
 });
 
 controller.get('/:name', async (c) => {
@@ -36,7 +41,6 @@ controller.post('/', async (c) => {
   if (errors.length > 0) {
     return c.json({ errors }, 400);
   }
-  console.log(file);
 
   await Image.store(name as string, file as any);
 

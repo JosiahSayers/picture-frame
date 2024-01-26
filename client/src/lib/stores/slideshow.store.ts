@@ -21,7 +21,6 @@ function create() {
     subscribe: currentImage.subscribe,
     set: (newImages: string[]) => {
       images.set(newImages);
-      currentIndex.set(0);
     },
     next,
     start: (displaySeconds = 10) => {

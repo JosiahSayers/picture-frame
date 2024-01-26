@@ -3,6 +3,8 @@ import path from 'node:path';
 import mime from 'mime';
 import { Environment } from '../utils/environment';
 
+const lastUploadTimeName = 'last-upload-time.txt';
+
 export class Image {
   static async list() {
     const fileList = await readdir(Environment.storagePath);
@@ -19,7 +21,19 @@ export class Image {
   }
 
   static async store(name: string, data: Blob) {
-    return Bun.write(this.filePath(name), data);
+    await Bun.write(this.filePath(name), data);
+    return Bun.write(
+      this.filePath(lastUploadTimeName),
+      new Date().toISOString()
+    );
+  }
+
+  static async lastUploadTime() {
+    if (await this.file(lastUploadTimeName).exists()) {
+      return this.file(lastUploadTimeName).text();
+    }
+
+    return null;
   }
 
   private static file(name: string) {
