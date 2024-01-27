@@ -1,5 +1,6 @@
 import { allowPageClose, confirmPageClose } from '$lib/confirm-page-close';
 import { writable, derived } from 'svelte/store';
+import { v4 as uuid } from 'uuid';
 
 let currentlyProcessingPromise = false;
 const fileQueue: FileProgress[] = [];
@@ -36,6 +37,7 @@ const addToQueue = (file: File) => {
     status: 'waiting',
     name: file.name,
     file: file,
+    id: uuid(),
   };
 
   if (fileQueue.length === 0) {
@@ -48,8 +50,8 @@ const addToQueue = (file: File) => {
   startUpload();
 };
 
-const updateFile = (name: string, options: { status?: FileStatus }) => {
-  const file = fileQueue.find((f) => f.name === name);
+const updateFile = (id: string, options: { status?: FileStatus }) => {
+  const file = fileQueue.find((f) => f.id === id);
   if (file) {
     file.status = options.status ?? file.status;
   }
@@ -66,19 +68,20 @@ const startUpload = async () => {
   }
 
   if (currentUpload) {
-    updateFile(currentUpload.name, { status: 'uploading' });
+    updateFile(currentUpload.id, { status: 'uploading' });
 
     try {
       currentlyProcessingPromise = true;
       await uploadFile(currentUpload.file);
-      currentlyProcessingPromise = false;
-      updateFile(currentUpload.name, {
+      updateFile(currentUpload.id, {
         status: 'complete',
       });
     } catch (e) {
       console.log(e);
-      updateFile(currentUpload.name, { status: 'failed' });
+      updateFile(currentUpload.id, { status: 'failed' });
       failedUploads.update((failed) => [...failed, currentUpload]);
+    } finally {
+      currentlyProcessingPromise = false;
     }
     uploadCompleted.set(currentUpload);
     await startUpload();
@@ -128,6 +131,7 @@ export interface QueueStatus {
 export type FileStatus = 'waiting' | 'uploading' | 'failed' | 'complete';
 
 export interface FileProgress {
+  id: string;
   status: FileStatus;
   name: string;
   file: File;

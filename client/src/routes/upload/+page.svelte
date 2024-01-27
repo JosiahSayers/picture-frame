@@ -7,6 +7,8 @@
   const queue = uploads.fileQueue;
   const uploadHistoryQueue = uploads.uploadHistory;
 
+  queue.subscribe(console.log);
+
   $: {
     if (files) {
       for (const file of files) {
@@ -31,7 +33,7 @@
 
 <p class="text-xl mb-2">Currently Uploading</p>
 <ul class="mb-20">
-  {#each $queue as upload (upload.file.name)}
+  {#each $queue as upload (upload.id)}
     <li>
       <UploadStatus {upload} />
     </li>
@@ -40,7 +42,7 @@
 
 <p class="text-xl mb-2">Upload History</p>
 <ul>
-  {#each $uploadHistoryQueue as upload}
+  {#each $uploadHistoryQueue as upload (upload.id)}
     <li>
       <UploadStatus {upload} />
     </li>
