@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { Image } from '../models/image.model';
+import { FileNotFoundError, Image } from '../models/image.model';
 import { stream } from 'hono/streaming';
 
 const controller = new Hono();
@@ -17,10 +17,27 @@ controller.get('/last-upload', async (c) => {
 controller.get('/:name', async (c) => {
   const image = await Image.load(c.req.param('name'));
   if (image === null) {
-    return c.status(404);
+    return c.text('Not Found', 404);
   }
   c.header('Content-Type', image.mimeType);
   return stream(c, (currentStream) => currentStream.pipe(image.stream));
+});
+
+controller.delete('/:name', async (c) => {
+  const name = c.req.param('name');
+  if (name.length < 4) {
+    return c.json({ error: 'File name not long enough to be valid' }, 400);
+  }
+
+  try {
+    await Image.delete(name);
+    return c.text('No Content', 204);
+  } catch (e) {
+    if (e instanceof FileNotFoundError) {
+      return c.text('Not Found', 404);
+    }
+    return c.text('Internal Server Error', 500);
+  }
 });
 
 controller.post('/', async (c) => {

@@ -1,8 +1,4 @@
-<script lang="ts">
-  export let color = 'error';
-</script>
-
-<span class={`text-${color} inline-block`}>
+<span class="text-error inline-block">
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"

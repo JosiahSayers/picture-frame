@@ -15,6 +15,8 @@
     if (show) {
       modal.show();
       slideshowStore.start($settingsStore.imageShownDuration);
+    } else {
+      slideshowStore.stop();
     }
   }
 
@@ -40,22 +42,25 @@
   });
 </script>
 
-<dialog bind:this={modal} class="slide-show-container modal bg-black">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+<dialog
+  bind:this={modal}
+  class="slide-show-container modal bg-black"
+  on:click={closeModal}
+>
   {#if show && $slideshowStore}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="modal-content" on:click={closeModal}>
-      {#key $slideshowStore}
-        <img
-          class="object-contain"
-          src={`/api/images/${$slideshowStore}`}
-          loading="lazy"
-          alt={$slideshowStore}
-          transition:selectedTransition={{
-            duration: $settingsStore.transition.duration * 1000,
-          }}
-        />
-      {/key}
-    </div>
+    {#key $slideshowStore}
+      <img
+        style={'max-width: 100vw'}
+        class="object-contain max-h-screen"
+        src={`/api/images/${$slideshowStore}`}
+        loading="lazy"
+        alt={$slideshowStore}
+        transition:selectedTransition|local={{
+          duration: $settingsStore.transition.duration * 1000,
+        }}
+      />
+    {/key}
   {/if}
 </dialog>

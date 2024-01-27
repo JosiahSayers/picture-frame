@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import mime from 'mime';
 import { Environment } from '../utils/environment';
@@ -22,10 +22,16 @@ export class Image {
 
   static async store(name: string, data: Blob) {
     await Bun.write(this.filePath(name), data);
-    return Bun.write(
-      this.filePath(lastUploadTimeName),
-      new Date().toISOString()
-    );
+    return this.recordLastUpdateTime();
+  }
+
+  static async delete(name: string) {
+    const fileExists = await this.file(name).exists();
+    if (!fileExists) {
+      throw new FileNotFoundError();
+    }
+    await unlink(this.filePath(name));
+    return this.recordLastUpdateTime();
   }
 
   static async lastUploadTime() {
@@ -43,4 +49,13 @@ export class Image {
   private static filePath(name: string) {
     return path.join(Environment.storagePath, name);
   }
+
+  private static async recordLastUpdateTime() {
+    return Bun.write(
+      this.filePath(lastUploadTimeName),
+      new Date().toISOString()
+    );
+  }
 }
+
+export class FileNotFoundError extends Error {}

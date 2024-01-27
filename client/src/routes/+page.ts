@@ -1,6 +1,6 @@
 export const ssr = false;
 
-export async function load({ depends }) {
+export async function load({ depends, fetch }) {
   const images = await fetch('/api/images');
   const json = await images.json();
   depends('custom:new-file-uploaded');
