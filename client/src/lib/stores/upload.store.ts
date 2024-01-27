@@ -92,15 +92,18 @@ const startUpload = async () => {
   }
 };
 
-function uploadFile(file: File) {
+async function uploadFile(file: File) {
   const formData = new FormData();
   formData.append('name', file.name);
   formData.append('file', file);
 
-  return fetch('/api/images', {
+  const res = await fetch('/api/images', {
     method: 'post',
     body: formData,
   });
+  if (!res.ok || res.status !== 200) {
+    throw new Error(`Failed to upload ${file.name}`);
+  }
 }
 
 export const uploads = {

@@ -2,7 +2,7 @@
   "name": "picture-frame",
   "module": "backend/index.ts",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "dev": "bun run --watch backend/index.ts",
     "publish": "docker buildx build --push --platform linux/arm64/v8,linux/amd64 -t josiahsayers15/picture-frame:$npm_package_version -t josiahsayers15/picture-frame:latest ."
