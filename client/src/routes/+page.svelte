@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { applyAction } from '$app/forms';
   import ImageListItem from '$lib/components/ImageListItem.svelte';
   import SlideShowContainer from '$lib/components/slideshow/SlideShowContainer.svelte';
   import Title from '$lib/components/title.svelte';
@@ -22,7 +23,14 @@
 
   async function startSlideshow() {
     try {
-      await document.getElementById('app')!.requestFullscreen();
+      const element = document.getElementById('app')!;
+      if (typeof element.webkitEnterFullscreen !== undefined) {
+        await element.webkitEnterFullscreen();
+      } else if (typeof element.webkitRequestFullscreen !== undefined) {
+        await element.webkitRequestFullscreen();
+      } else {
+        await document.getElementById('app')!.requestFullscreen();
+      }
     } catch (e) {
       console.error("Couldn't start fullscreen", e);
     } finally {
