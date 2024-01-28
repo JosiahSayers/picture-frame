@@ -1,6 +1,7 @@
 import { readdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import mime from 'mime';
+import { v4 as uuid } from 'uuid';
 import { Environment } from '../utils/environment';
 
 const lastUploadTimeName = 'last-upload-time.txt';
@@ -14,22 +15,18 @@ export class Image {
   }
 
   static async load(name: string) {
-    if (!(await this.file(name).exists())) {
-      return null;
-    }
-    return { stream: this.file(name).stream(), mimeType: mime.getType(name)! };
+    const file = await this.confirmFileExists(name);
+    return { stream: file.stream(), mimeType: mime.getType(name) ?? '' };
   }
 
   static async store(name: string, data: Blob) {
-    await Bun.write(this.filePath(name), data);
+    const storageName = await this.createUniqueName(name);
+    await Bun.write(this.filePath(storageName), data);
     return this.recordLastUpdateTime();
   }
 
   static async delete(name: string) {
-    const fileExists = await this.file(name).exists();
-    if (!fileExists) {
-      throw new FileNotFoundError();
-    }
+    await this.confirmFileExists(name);
     await unlink(this.filePath(name));
     return this.recordLastUpdateTime();
   }
@@ -48,6 +45,25 @@ export class Image {
 
   private static filePath(name: string) {
     return path.join(Environment.storagePath, name);
+  }
+
+  private static async createUniqueName(name: string) {
+    const format = name.split('.').pop();
+    let nameCandidate = '';
+    do {
+      nameCandidate = `${uuid()}.${format}`;
+      console.log(`Trying: ${nameCandidate}`);
+    } while (await this.file(nameCandidate).exists());
+    return nameCandidate;
+  }
+
+  private static async confirmFileExists(name: string) {
+    const file = this.file(name);
+    const fileExists = await file.exists();
+    if (!fileExists) {
+      throw new FileNotFoundError();
+    }
+    return file;
   }
 
   private static async recordLastUpdateTime() {

@@ -5,44 +5,17 @@ import { v4 as uuid } from 'uuid';
 let currentlyProcessingPromise = false;
 const fileQueue: FileProgress[] = [];
 const fileQueueStore = writable(fileQueue);
-const failedUploads = writable<FileProgress[]>([]);
-const uploadCompleted = writable<FileProgress>();
-const allUploadsCompleted = writable<Date>();
 const uploadHistory = writable<FileProgress[]>([]);
-const queueStatus = derived<typeof fileQueueStore, QueueStatus>(
-  fileQueueStore,
-  (val, set) => {
-    let text: QueueStatusText = 'empty';
-
-    if (val.some((f) => f.status === 'uploading' || f.status === 'waiting')) {
-      text = 'uploading';
-    } else if (val.length) {
-      text = 'complete';
-    }
-    const completed = val.filter(
-      (f) => f.status === 'complete' || f.status === 'failed'
-    );
-
-    set({
-      text,
-      totalFiles: val.length,
-      completedFiles: completed.length,
-      percentComplete: ((completed.length || 0) / (val.length || 1)) * 100,
-    });
-  }
-);
 
 const addToQueue = (file: File) => {
   const fileProgress: FileProgress = {
     status: 'waiting',
-    name: file.name,
     file: file,
     id: uuid(),
   };
 
   if (fileQueue.length === 0) {
     confirmPageClose();
-    failedUploads.set([]);
   }
 
   fileQueue.push(fileProgress);
@@ -50,10 +23,10 @@ const addToQueue = (file: File) => {
   startUpload();
 };
 
-const updateFile = (id: string, options: { status?: FileStatus }) => {
+const updateFile = (id: string, newStatus: FileStatus) => {
   const file = fileQueue.find((f) => f.id === id);
   if (file) {
-    file.status = options.status ?? file.status;
+    file.status = newStatus;
   }
   fileQueueStore.set(fileQueue);
 };
@@ -68,25 +41,20 @@ const startUpload = async () => {
   }
 
   if (currentUpload) {
-    updateFile(currentUpload.id, { status: 'uploading' });
+    updateFile(currentUpload.id, 'uploading');
 
     try {
       currentlyProcessingPromise = true;
       await uploadFile(currentUpload.file);
-      updateFile(currentUpload.id, {
-        status: 'complete',
-      });
+      updateFile(currentUpload.id, 'complete');
     } catch (e) {
       console.log(e);
-      updateFile(currentUpload.id, { status: 'failed' });
-      failedUploads.update((failed) => [...failed, currentUpload]);
+      updateFile(currentUpload.id, 'failed');
     } finally {
       currentlyProcessingPromise = false;
     }
-    uploadCompleted.set(currentUpload);
-    await startUpload();
+    startUpload();
   } else {
-    allUploadsCompleted.set(new Date());
     uploadHistory.update((history) => [...fileQueue, ...history]);
     fileQueue.splice(0, fileQueue.length);
     fileQueueStore.set(fileQueue);
@@ -112,10 +80,6 @@ async function uploadFile(file: File) {
 export const uploads = {
   addToQueue,
   fileQueue: fileQueueStore,
-  uploadCompleted,
-  allUploadsCompleted,
-  queueStatus,
-  failedUploads,
   uploadHistory,
 };
 
@@ -133,6 +97,5 @@ export type FileStatus = 'waiting' | 'uploading' | 'failed' | 'complete';
 export interface FileProgress {
   id: string;
   status: FileStatus;
-  name: string;
   file: File;
 }
