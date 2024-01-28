@@ -13,7 +13,7 @@ COPY package.json bun.lockb /temp/server/
 RUN cd /temp/server && bun install --frozen-lockfile --production
 
 FROM base as release
-COPY --from=client-build /temp/client/build client
+COPY --from=client-build /temp/client/build public
 COPY --from=server-install /temp/server/node_modules node_modules
 COPY backend .
 

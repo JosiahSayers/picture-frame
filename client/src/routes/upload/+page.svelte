@@ -4,16 +4,11 @@
   import { uploads } from '$lib/stores/upload.store';
   let files: FileList;
   let fileInput: HTMLInputElement;
-  const queue = uploads.fileQueue;
-  const uploadHistoryQueue = uploads.uploadHistory;
-
-  queue.subscribe(console.log);
+  const { fileQueue, uploadHistory, retryFailedItems } = uploads;
 
   $: {
     if (files) {
-      for (const file of files) {
-        uploads.addToQueue(file);
-      }
+      uploads.addToQueue(Array.from(files));
       fileInput.value = '';
     }
   }
@@ -33,16 +28,21 @@
 
 <p class="text-xl mb-2">Currently Uploading</p>
 <ul class="mb-20">
-  {#each $queue as upload (upload.id)}
+  {#each $fileQueue as upload (upload.id)}
     <li>
       <UploadStatus {upload} />
     </li>
   {/each}
 </ul>
 
-<p class="text-xl mb-2">Upload History</p>
+<div class="flex items-center mb-2">
+  <p class="text-xl mr-3">Upload History</p>
+  <button class="btn btn-primary" on:click={retryFailedItems}
+    >Retry Failed Items</button
+  >
+</div>
 <ul>
-  {#each $uploadHistoryQueue as upload (upload.id)}
+  {#each $uploadHistory as upload (upload.id)}
     <li>
       <UploadStatus {upload} />
     </li>

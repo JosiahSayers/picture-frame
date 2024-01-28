@@ -23,7 +23,7 @@
 
   async function startSlideshow() {
     try {
-      const element = document.getElementById('app')!;
+      const element = document.getElementById('app') as any; // Fix for webkit functions not existing on type
       if (typeof element.webkitEnterFullscreen !== undefined) {
         await element.webkitEnterFullscreen();
       } else if (typeof element.webkitRequestFullscreen !== undefined) {

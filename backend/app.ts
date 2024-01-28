@@ -14,6 +14,8 @@ app.get('health', (c) => {
 
 app.route('/api/images', imageController);
 
-app.get('*', serveStatic({ root: 'client' }));
+app.get('/upload', serveStatic({ root: 'public', path: '/' }));
+app.get('/settings', serveStatic({ root: 'public', path: '/' }));
+app.get('*', serveStatic({ root: 'public' }));
 
 export default app;

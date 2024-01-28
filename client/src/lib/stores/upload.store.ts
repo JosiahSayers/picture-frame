@@ -7,20 +7,23 @@ const fileQueue: FileProgress[] = [];
 const fileQueueStore = writable(fileQueue);
 const uploadHistory = writable<FileProgress[]>([]);
 
-const addToQueue = (file: File) => {
-  const fileProgress: FileProgress = {
+const addToQueue = (file: File | File[]) => {
+  const files = Array.isArray(file) ? file : [file];
+  const fileProgresses = files.map<FileProgress>((file) => ({
     status: 'waiting',
-    file: file,
+    file,
     id: uuid(),
-  };
+  }));
 
-  if (fileQueue.length === 0) {
-    confirmPageClose();
-  }
+  const lengthBeforeNewElements = fileQueue.length;
 
-  fileQueue.push(fileProgress);
+  fileQueue.push(...fileProgresses);
   fileQueueStore.set(fileQueue);
-  startUpload();
+
+  if (lengthBeforeNewElements === 0 && fileQueue.length > 0) {
+    confirmPageClose();
+    startUpload();
+  }
 };
 
 const updateFile = (id: string, newStatus: FileStatus) => {
@@ -77,10 +80,22 @@ async function uploadFile(file: File) {
   }
 }
 
+function retryFailedItems() {
+  const unsubscribe = uploadHistory.subscribe((history) => {
+    const failed = history.filter((file) => file.status === 'failed');
+    const failedFiles = failed.map((fileProgress) => fileProgress.file);
+    if (failedFiles.length > 0) {
+      addToQueue(failedFiles);
+    }
+  });
+  unsubscribe();
+}
+
 export const uploads = {
   addToQueue,
   fileQueue: fileQueueStore,
   uploadHistory,
+  retryFailedItems,
 };
 
 export type QueueStatusText = 'empty' | 'uploading' | 'complete';

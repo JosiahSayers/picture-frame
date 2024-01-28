@@ -50,9 +50,13 @@ export class Image {
   private static async createUniqueName(name: string) {
     const format = name.split('.').pop();
     let nameCandidate = '';
+    let iteration = 0;
     do {
+      if (iteration > 10) {
+        throw new Error('Unable to find unique filename');
+      }
       nameCandidate = `${uuid()}.${format}`;
-      console.log(`Trying: ${nameCandidate}`);
+      iteration++;
     } while (await this.file(nameCandidate).exists());
     return nameCandidate;
   }
